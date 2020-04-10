@@ -1,14 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StrategyPatternSample
 {
     class Program
     {
         static void Main(string[] args)
+        {
+            //EShopDemo();
+
+            StrategicLawnMower.Demo();
+        }
+
+        private static void EShopDemo()
         {
             var basket = new EShopBasket();
 
@@ -40,7 +43,6 @@ namespace StrategyPatternSample
             var success = basket.Pay();
             Console.WriteLine(success);
             Console.Read();
-
         }
     }
 }
