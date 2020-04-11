@@ -36,34 +36,53 @@ namespace StrategyPatternSample
             basket.SetDueAmount(amount);
 
             Console.Write("How would you like to pay? 1) CC, 2) PayPal, 3) ApplePay : ");
-            var input = int.Parse(Console.ReadLine().Trim());
-            bool success = PayBasket(basket, input);
+            var paymentType = int.Parse(Console.ReadLine().Trim());
+            Console.Write("Please select the shipment method (1=PostOffice, 2=Courier, 3=Own, 4=Pickup:");
+            var carrierType = (CarrierType)int.Parse(Console.ReadLine().Trim());
+            Console.Write("Please give your address:");
+            var address = Console.ReadLine().Trim();
+
+            var simpleEshop = new SimpleEshop();
+            var success = simpleEshop.PayAndSendOrder(basket, paymentType, address, carrierType);
+            Console.WriteLine(success);
+            Console.Read();
+        }
+    }
+
+    // Facade
+    class SimpleEshop
+    {
+        public bool PayAndSendOrder(EShopBasket basket, int paymentMethod, string address, CarrierType carrierType)
+        {
+            var payments = new Payments();
+            bool success = payments.PayBasket(basket, paymentMethod);
 
             if (success)
             {
-                Console.Write("Please select the shipment method (1=PostOffice, 2=Courier, 3=Own, 4=Pickup:");
-                var carrierType = (CarrierType) int.Parse(Console.ReadLine().Trim());
                 if (carrierType != CarrierType.Pickup)
                 {
-                    Console.Write("Please give your address:");
-                    var address = Console.ReadLine().Trim();
                     var shipment = new Shipment();
                     if (shipment.CanShipTo(address, carrierType))
                     {
                         shipment.DeliverOrder(address, basket);
                     }
+                    else
+                    {
+                        success = false;
+                    }
                 }
             }
 
-
-
-            Console.WriteLine(success);
-            Console.Read();
+            return success;
         }
+    }
 
-        private static bool PayBasket(EShopBasket basket, int input)
+    // Payments subsystem
+    class Payments
+    {
+        public bool PayBasket(EShopBasket basket, int paymentMethod)
         {
-            switch (input)
+            switch (paymentMethod)
             {
                 case 1:
                     basket.SelectPaymentMethod(new CreditCard());
@@ -92,12 +111,14 @@ namespace StrategyPatternSample
     {
         public bool CanShipTo(string address, CarrierType carrier)
         {
-            return false;
+            if (carrier == CarrierType.Pickup) return true;
+
+            return !string.IsNullOrWhiteSpace(address);
         }
 
         public void DeliverOrder(string address, EShopBasket basket)
         {
-
+            Console.WriteLine("Deliver order to address: " + address);
         }
     }
 
